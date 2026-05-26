@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 
-//create post schema
-
+//schema
 const postSchema = new mongoose.Schema(
   {
     title: {
@@ -20,11 +19,14 @@ const postSchema = new mongoose.Schema(
     },
     images: [
       {
-       url:{
-       type: String,
-       required: true,
-       },
-       public_id: String,
+        url: {
+          type: String,
+          required: true,
+        },
+        public_id: {
+          type: String,
+          required: true,
+        },
       },
     ],
     comments: [

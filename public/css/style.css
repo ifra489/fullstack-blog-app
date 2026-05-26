@@ -1,0 +1,67 @@
+body{
+  background:#121212;
+  color:white;
+}
+
+/* Hero Section */
+.hero-section{
+  background:
+  linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+  url('https://images.unsplash.com/photo-1506744038136-46273834b3fb');
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  height: 100vh;
+  position: relative;
+}
+
+.card-header{
+  background: linear-gradient(90deg, #6C63FF, #8B5CF6) !important;
+  color: white;
+  border: none;
+}
+.btn-outline-light{
+    border-color: white !important;
+    color: white !important;
+   background: #48165f !important;
+}
+.btn-outline-light:hover{
+    background: #2c063d !important;
+    color: #f5f5f5 !important;
+    border-color: white !important;
+}
+/* Cards */
+.card{
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 20px;
+  color: white;
+  transition: 0.3s ease;
+}
+
+/* Card Hover */
+.card:hover{
+  transform: translateY(-10px);
+}
+
+/* Buttons */
+.btn-primary{
+  background:#6C63FF;
+  border:none;
+}
+.btn-primary:hover{
+  background:#8B5CF6;
+}
+.btn-warning{
+  background:#FFB703;
+  border:none;
+  color:black;
+}
+
+/* Titles */
+h1,h2,h3{
+  font-weight:bold;
+}
