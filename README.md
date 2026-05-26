@@ -1,39 +1,101 @@
+
 # Full Blog
-
-A full-stack blog application built with Node.js, Express, EJS, MongoDB, Passport.js, Cloudinary, and Multer.
-
+ 
+A full-stack blog application built with **Node.js**, **Express**, **EJS**, **MongoDB**, **Passport.js**, **Cloudinary**, and **Multer**.
+ 
+## Screenshots
+ 
+### Home Page
+![Home Page](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/home.png)
+ 
+### Posts Listing
+![Posts Listing](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/posts.png)
+ 
+### Post Detail
+![Post Detail](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/post-detail.png)
+ 
+### Create Post
+![Create Post](/screenshots/create-post.png)
+ 
+### User Profile
+![User Profile](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/profile.png)
+ 
+### Login
+![Login](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/login.png)
+ 
+### Register
+![Register](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/register.png)
+ 
+---
+ 
+## Tech Stack
+ 
+- **Backend** — Node.js, Express.js
+- **Database** — MongoDB with Mongoose
+- **Authentication** — Passport.js (Local Strategy) + bcrypt
+- **Views** — EJS templating engine
+- **Image Uploads** — Cloudinary + Multer
+- **Validation** — express-validator
+- **Styling** — Bootstrap 5 + Custom CSS
 ## Features
-
+ 
 - User registration and login with session-based authentication
-- Create, edit, and delete blog posts
-- Upload post images to Cloudinary
-- Add, edit, and delete comments on posts
-- User profile page with editable account details
+- Input validation on all forms (register, login, posts, comments)
+- Create, edit, and delete blog posts with multiple image uploads
+- Image carousel on post detail page
+- Like and unlike posts with live count update
+- Add, edit, and delete comments with timestamps
+- Search posts by title
+- Pagination on posts listing (10 posts per page)
+- User profile page with editable account details and profile picture
+- Full account deletion — cleans up all posts, comments, and Cloudinary images
 - Protected routes for authenticated users
-
+- Centralized error handling
 ## Project Structure
-
-- `app.js` - main Express application entry point
-- `controllers/` - business logic for auth, posts, comments, and user profile
-- `models/` - Mongoose schemas for `User`, `Post`, `Comment`, and `File`
-- `routes/` - Express route definitions for authentication, posts, comments, and user profile
-- `config/` - Cloudinary and Multer configuration
-- `middleware/` - authentication middleware and centralized error handling
-- `views/` - EJS templates
-- `public/` - static assets such as CSS
-
+ 
+```
+full-blog/
+├── app.js                  # Main Express application entry point
+├── controllers/
+│   ├── authController.js   # Register, login, logout logic
+│   ├── postControllers.js  # CRUD posts, search, pagination, likes
+│   ├── commentControllers.js  # CRUD comments
+│   └── userController.js   # Profile view, edit, delete account
+├── models/
+│   ├── User.js             # User schema
+│   ├── Post.js             # Post schema (with likes array)
+│   ├── Comment.js          # Comment schema (with timestamps)
+│   └── File.js             # Uploaded file schema
+├── routes/
+│   ├── authRoutes.js       # Auth routes with validation
+│   ├── postRoutes.js       # Post routes with validation
+│   ├── commentRoutes.js    # Comment routes with validation
+│   └── userRoutes.js       # User profile routes
+├── config/
+│   ├── cloudinary.js       # Cloudinary setup
+│   ├── multer.js           # Multer setup
+│   └── passport.js         # Passport local strategy
+├── middleware/
+│   ├── auth.js             # ensureAuthenticated middleware
+│   └── errorHandler.js     # Centralized error handler
+├── views/                  # EJS templates
+└── public/                 # Static assets (CSS, JS)
+```
+ 
 ## Installation
-
-1. Clone the repository or copy the project into a local folder.
-2. Open a terminal in the project root.
-3. Install dependencies:
-
+ 
+1. Clone the repository:
+```bash
+git clone https://github.com/ifra489/full-blog.git
+cd full-blog
+```
+ 
+2. Install dependencies:
 ```bash
 npm install
 ```
-
-4. Create a `.env` file in the project root with the following values:
-
+ 
+3. Create a `.env` file in the project root:
 ```env
 PORT=3000
 MONGODB_URL=<your-mongodb-connection-string>
@@ -42,36 +104,65 @@ CLOUDINARY_CLOUD_NAME=<your-cloudinary-cloud-name>
 CLOUDINARY_API_KEY=<your-cloudinary-api-key>
 CLOUDINARY_API_SECRET=<your-cloudinary-api-secret>
 ```
-
+ 
 ## Run the App
-
+ 
+**Development:**
+```bash
+npm run dev
+```
+ 
+**Production:**
 ```bash
 npm start
 ```
-
+ 
 Then open `http://localhost:3000` in your browser.
-
+ 
 ## Key Routes
-
-- `/` - Home page
-- `/auth/register` - Registration page
-- `/auth/login` - Login page
-- `/auth/logout` - Logout action
-- `/posts` - List posts
-- `/posts/add` - Create a new post
-- `/posts/:id` - View a post
-- `/posts/:id/edit` - Edit a post
-- `/posts/:id/comments` - Add a comment
-- `/comments/:id/edit` - Edit a comment
-- `/user/profile` - User profile
-- `/user/edit` - Edit account details
-
+ 
+| Method | Route | Description | Auth Required |
+|--------|-------|-------------|---------------|
+| GET | `/` | Home page | No |
+| GET | `/auth/register` | Registration page | No |
+| POST | `/auth/register` | Register user | No |
+| GET | `/auth/login` | Login page | No |
+| POST | `/auth/login` | Login user | No |
+| GET | `/auth/logout` | Logout | Yes |
+| GET | `/posts` | List all posts (search + pagination) | No |
+| GET | `/posts/add` | Create post form | Yes |
+| POST | `/posts/add` | Create new post | Yes |
+| GET | `/posts/:id` | View single post | No |
+| GET | `/posts/:id/edit` | Edit post form | Yes |
+| PUT | `/posts/:id` | Update post | Yes |
+| DELETE | `/posts/:id` | Delete post | Yes |
+| POST | `/posts/:id/like` | Like / unlike post | Yes |
+| POST | `/posts/:id/comments` | Add comment | Yes |
+| GET | `/comments/:id/edit` | Edit comment form | Yes |
+| PUT | `/comments/:id` | Update comment | Yes |
+| DELETE | `/comments/:id` | Delete comment | Yes |
+| GET | `/user/profile` | View profile | Yes |
+| GET | `/user/edit` | Edit profile form | Yes |
+| POST | `/user/edit` | Update profile | Yes |
+| POST | `/user/delete` | Delete account | Yes |
+ 
+## Environment Variables
+ 
+| Variable | Description |
+|----------|-------------|
+| `PORT` | Port number (default 3000) |
+| `MONGODB_URL` | MongoDB connection string (Atlas or local) |
+| `SESSION_SECRET` | Secret key for session encryption |
+| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Your Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Your Cloudinary API secret |
+ 
 ## Notes
-
-- The app uses Cloudinary for image uploads and stores session data in MongoDB.
-- Make sure your MongoDB instance is running and reachable from the application.
-- If you do not need image uploads, you can still use the blog features after configuring Cloudinary properly.
-
+ 
+- Cloudinary is required for image uploads — create a free account at cloudinary.com
+- MongoDB Atlas free tier (M0) works perfectly for this app
+- Session data is stored in MongoDB via connect-mongo
+- All routes with form submissions are protected with express-validator
 ## License
-
+ 
 This project is available under the ISC license.
