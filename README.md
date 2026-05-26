@@ -6,25 +6,29 @@ A full-stack blog application built with **Node.js**, **Express**, **EJS**, **Mo
 ## Screenshots
  
 ### Home Page
-![Home Page](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/home.png)
+![Home Page](/screenshot/home121.png)
  
-### Posts Listing
-![Posts Listing](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/posts.png)
+### Home 
+![Home Page](/screenshot/home123.png)
  
 ### Post Detail
-![Post Detail](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/post-detail.png)
+![Post Detail](/screenshot/postdetails.png)
  
-### Create Post
-![Create Post](/screenshots/create-post.png)
+### All Post
+![Create Post](/screenshot/Allpost.png)
  
 ### User Profile
-![User Profile](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/profile.png)
+![User Profile](/screenshot/profile.png)
  
 ### Login
-![Login](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/login.png)
+![Login](/screenshot/login.png)
  
 ### Register
-![Register](https://raw.githubusercontent.com/ifra489/full-blog/main/screenshots/register.png)
+![Register](/screenshot/register.png)
+### AddPost
+![Register](/screenshot/addpost.png)
+### Edit
+![Register](/screenshot/editprofile.png)
  
 ---
  
