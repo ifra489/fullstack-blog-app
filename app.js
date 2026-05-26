@@ -1,54 +1,67 @@
+require("dotenv").config();
 const express = require("express");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const passport = require("passport");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-
-const userRouter = require("./routes/authRoutes");
-const postRoutes=require("./routes/postRoutes");
-const passportConfig = require("./config/passport");
-
-dotenv.config();
-
 const app = express();
-const port = process.env.PORT || 3000;
+const mongoose = require("mongoose");
+const passport = require("passport");
+const MongoStore = require("connect-mongo");
+const methodOverride = require("method-override");
+const session = require("express-session");
+const User = require("./models/User");
+const passportConfig = require("./config/passport");
+const postRoutes = require("./routes/postRoutes");
+const errorHandler = require("./middleware/errorHandler");
+const commentRoutes = require("./routes/commentRoutes");
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
 
-// view engine
-app.set("view engine", "ejs");
-
-// body parser
+//port
+const PORT = process.env.PORT || 3000;
+//middlewares: passing form data
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static("public"));
-// session
+
+//session middleware
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
-    }),
+    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URL }),
   }),
 );
-
-// passport config
+// Method override middleware
+app.use(methodOverride("_method"));
+//passport
 passportConfig(passport);
 app.use(passport.initialize());
 app.use(passport.session());
-
-// routes
-app.use("/", userRouter);
-app.use("/posts",postRoutes);
-
-// DB connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error(err));
-
-// server start
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.use(express.static("public"));
+//EJS
+app.set("view engine", "ejs");
+//Home route
+app.get("/", (req, res) => {
+  res.render("home", {
+    user: req.user,
+    error: "",
+    title: "Home",
+  });
 });
+//routes
+app.use("/", authRoutes);
+app.use("/posts", postRoutes);
+app.use("/", commentRoutes);
+app.use("/user", userRoutes);
+
+//error handler
+app.use(errorHandler);
+//start server
+mongoose
+  .connect(process.env.MONGODB_URL)
+  .then(() => {
+    console.log("Database connected...");
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch(() => {
+    console.log("Database connection failed");
+  });

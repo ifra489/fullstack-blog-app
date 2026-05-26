@@ -1,7 +1,10 @@
 const asyncHandler = require("express-async-handler");
+const { validationResult } = require("express-validator");
 const File = require("../models/File");
 const Post = require("../models/Post");
 const cloudinary = require("../config/cloudinary");
+
+const POSTS_PER_PAGE = 10;
 
 //Rendering post form
 exports.getPostForm = asyncHandler((req, res) => {
@@ -15,8 +18,16 @@ exports.getPostForm = asyncHandler((req, res) => {
 
 //Creating new post
 exports.createPost = asyncHandler(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.render("newPost", {
+      title: "Create Post",
+      user: req.user,
+      error: errors.array()[0].msg,
+      success: "",
+    });
+  }
   const { title, content } = req.body;
-  //validation
   if (!req.files || req.files.length === 0) {
     return res.render("newPost", {
       title: "Create Post",
@@ -27,29 +38,17 @@ exports.createPost = asyncHandler(async (req, res) => {
   }
   const images = await Promise.all(
     req.files.map(async (file) => {
-      //save the images into our database
       const newFile = new File({
         url: file.path,
         public_id: file.filename,
         uploaded_by: req.user._id,
       });
       await newFile.save();
-      console.log(newFile);
-      return {
-        url: newFile.url,
-        public_id: newFile.public_id,
-      };
+      return { url: newFile.url, public_id: newFile.public_id };
     }),
   );
-  //create post
-  const newPost = new Post({
-    title,
-    content,
-    author: req.user._id,
-    images,
-  });
+  const newPost = new Post({ title, content, author: req.user._id, images });
   await newPost.save();
-
   res.render("newPost", {
     title: "Create Post",
     user: req.user,
@@ -58,9 +57,22 @@ exports.createPost = asyncHandler(async (req, res) => {
   });
 });
 
-//Get all posts
+//Get all posts — with pagination and search
 exports.getPosts = asyncHandler(async (req, res) => {
-  const posts = await Post.find().populate("author", "username");
+  const page = parseInt(req.query.page) || 1;
+  const search = req.query.search || "";
+  const query = search
+    ? { title: { $regex: search, $options: "i" } }
+    : {};
+
+  const totalPosts = await Post.countDocuments(query);
+  const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+
+  const posts = await Post.find(query)
+    .populate("author", "username")
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * POSTS_PER_PAGE)
+    .limit(POSTS_PER_PAGE);
 
   res.render("posts", {
     title: "Posts",
@@ -68,23 +80,21 @@ exports.getPosts = asyncHandler(async (req, res) => {
     user: req.user,
     success: "",
     error: "",
+    currentPage: page,
+    totalPages,
+    search,
   });
 });
 
-//get post by id
-
+//Get post by id
 exports.getPostById = asyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id)
     .populate("author", "username")
+    .populate("likes", "_id")
     .populate({
       path: "comments",
-      populate: {
-        path: "author",
-        model: "User",
-        select: "username",
-      },
+      populate: { path: "author", model: "User", select: "username" },
     });
-  console.log(post);
   res.render("postDetails", {
     title: "Post",
     post,
@@ -94,10 +104,9 @@ exports.getPostById = asyncHandler(async (req, res) => {
   });
 });
 
-//get edit post form
+//Get edit post form
 exports.getEditPostForm = asyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id);
-
   if (!post) {
     return res.render("postDetails", {
       title: "Post",
@@ -116,10 +125,20 @@ exports.getEditPostForm = asyncHandler(async (req, res) => {
   });
 });
 
-//update post
+//Update post — fix: only replace images if new files uploaded
 exports.updatePost = asyncHandler(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const post = await Post.findById(req.params.id);
+    return res.render("editPost", {
+      title: "Edit Post",
+      post,
+      user: req.user,
+      error: errors.array()[0].msg,
+      success: "",
+    });
+  }
   const { title, content } = req.body;
-  //find the post
   const post = await Post.findById(req.params.id);
   if (!post) {
     return res.render("postDetails", {
@@ -130,7 +149,6 @@ exports.updatePost = asyncHandler(async (req, res) => {
       success: "",
     });
   }
-
   if (post.author.toString() !== req.user._id.toString()) {
     return res.render("postDetails", {
       title: "Post",
@@ -140,38 +158,34 @@ exports.updatePost = asyncHandler(async (req, res) => {
       success: "",
     });
   }
-
   post.title = title || post.title;
   post.content = content || post.content;
-  if (req.files) {
+
+  // Only replace images if new ones were uploaded
+  if (req.files && req.files.length > 0) {
     await Promise.all(
       post.images.map(async (image) => {
         await cloudinary.uploader.destroy(image.public_id);
       }),
     );
+    post.images = await Promise.all(
+      req.files.map(async (file) => {
+        const newFile = new File({
+          url: file.path,
+          public_id: file.filename,
+          uploaded_by: req.user._id,
+        });
+        await newFile.save();
+        return { url: newFile.url, public_id: newFile.public_id };
+      }),
+    );
   }
-  post.images = await Promise.all(
-    req.files.map(async (file) => {
-      const newFile = new File({
-        url: file.path,
-        public_id: file.filename,
-        uploaded_by: req.user._id,
-      });
-      await newFile.save();
-      return {
-        url: newFile.url,
-        public_id: newFile.public_id,
-      };
-    }),
-  );
-  console.log(post);
   await post.save();
   res.redirect(`/posts/${post._id}`);
 });
 
-//delete post
+//Delete post
 exports.deletePost = asyncHandler(async (req, res) => {
-  //find the post
   const post = await Post.findById(req.params.id);
   if (!post) {
     return res.render("postDetails", {
@@ -198,4 +212,21 @@ exports.deletePost = asyncHandler(async (req, res) => {
   );
   await Post.findByIdAndDelete(req.params.id);
   res.redirect("/posts");
+});
+
+//Like / Unlike post
+exports.toggleLike = asyncHandler(async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).json({ message: "Post not found" });
+  }
+  const userId = req.user._id.toString();
+  const alreadyLiked = post.likes.some((id) => id.toString() === userId);
+  if (alreadyLiked) {
+    post.likes = post.likes.filter((id) => id.toString() !== userId);
+  } else {
+    post.likes.push(req.user._id);
+  }
+  await post.save();
+  res.json({ likes: post.likes.length, liked: !alreadyLiked });
 });
