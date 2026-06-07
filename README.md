@@ -1,7 +1,7 @@
 
 # Full Blog
  
-A full-stack blog application built with **Node.js**, **Express**, **EJS**, **MongoDB**, **Passport.js**, **Cloudinary**, and **Multer**.
+A full-stack blog application built with **Node.js**, **Express**, **EJS**, **MongoDB**, **Passport.js**, **Cloudinary**, and **Multer**......
  
 ## Screenshots
  
